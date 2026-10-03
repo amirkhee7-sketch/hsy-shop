@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HSY SHOP | نظام إدارة الاشتراكات وحساب الأرباح (بالدينار الجزائري)</title>
+  
+  <!-- Favicon using HSY Logo -->
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js for Visual Profit Analysis -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              accent: '#00d2ff',
+              deep: '#061325'
+            },
+            messenger: {
+              DEFAULT: '#0084FF',
+              dark: '#0066CC',
+              gradient: 'linear-gradient(135deg, #00B2FE 0%, #006AFF 100%)'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0ea5e9;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card-light {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .btn-messenger {
+      background: linear-gradient(135deg, #00B2FE 0%, #006AFF 100%);
+      color: white;
+    }
+    .btn-messenger:hover {
+      filter: brightness(1.1);
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen transition-colors duration-300 selection:bg-brand-500 selection:text-white pb-16">
+
+  <!-- TOP NOTIFICATION BAR (FOR EXPIRING SUBSCRIPTIONS) -->
+  <div id="topExpiringBanner" class="hidden bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white px-4 py-2 text-sm shadow-lg flex items-center justify-between transition-all">
+    <div class="container mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <i data-lucide="alert-triangle" class="w-5 h-5 animate-bounce text-amber-200"></i>
+        <span id="expiringBannerText" class="font-medium">تنبيه: هناك اشتراكات تقترب من موعد الانتهاء وتحتاج إلى تذكير الزبائن بالتجديد عبر ميسنجر!</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="filterByStatus('expiring')" class="bg-black/30 hover:bg-black/50 text-white px-3 py-1 rounded-lg text-xs font-bold transition">
+          عرض الاشتراكات القريبة
+        </button>
+        <button onclick="document.getElementById('topExpiringBanner').classList.add('hidden')" class="hover:bg-white/20 p-1 rounded-lg text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#090d16]/90 backdrop-blur-xl">
+    <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand & Logo -->
+      <div class="flex items-center gap-3">
+        <div class="relative group cursor-pointer" onclick="showBrandModal()">
+          <img src="assets/logo.png" alt="HSY SHOP Logo" class="w-12 h-12 rounded-full border-2 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)] object-cover bg-white transition-transform transform group-hover:scale-105 duration-200">
+          <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-black tracking-wider bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">
+              HSY SHOP
+            </h1>
+            <span class="text-[10px] uppercase font-bold tracking-widest bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full">الجزائر 🇩🇿</span>
+          </div>
+          <p class="text-xs text-slate-400 font-medium">لوحة إدارة اشتراكات الزبائن وحساب الأرباح (بالدينار الجزائري)</p>
+        </div>
+      </div>
+
+      <!-- Action Navigation Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        
+        <!-- Tab Switches -->
+        <div class="bg-slate-900/90 border border-slate-800 p-1 rounded-xl flex items-center text-xs">
+          <button id="tabBtn-subs" onclick="switchTab('subs')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>الاشتراكات والزبائن</span>
+          </button>
+          <button id="tabBtn-calc" onclick="switchTab('calc')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-white">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+            <span>حاسبة الأرباح والتسعير</span>
+          </button>
+          <button id="tabBtn-admin" onclick="switchTab('admin')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-white">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>إدارة ورابط الـ Admin</span>
+          </button>
+        </div>
+
+        <!-- Add Subscriber Button -->
+        <button onclick="openAddSubscriptionModal()" class="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all transform active:scale-95">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>إضافة اشتراك جديد</span>
+        </button>
+
+        <!-- Direct Admin Link Button (No Messenger) -->
+        <button onclick="openAdminShareModal()" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+          <i data-lucide="link-2" class="w-4 h-4 text-cyan-400"></i>
+          <span>رابط لوحة الأدمن</span>
+        </button>
+
+        <!-- Open on Phone Button with QR Code -->
+        <button onclick="openPhoneModal()" class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-cyan-500/20">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          <span>فتح على الهاتف 📱</span>
+        </button>
+
+        <!-- Fixed Algerian Dinar Badge -->
+        <div class="bg-slate-900 border border-cyan-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-bold text-cyan-300 shadow-inner">
+          <i data-lucide="coins" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>العملة: د.ج (دينار جزائري)</span>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="container mx-auto px-4 py-6 max-w-7xl">
+
+    <!-- KPI / SUMMARY CARDS -->
+    <section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+      
+      <!-- 1. Total Subscribers -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden group hover:border-cyan-500/50 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold">إجمالي الزبائن</span>
+          <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+            <i data-lucide="users" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-white" id="stat-totalSubscribers">0</div>
+        <span class="text-[11px] text-slate-400 mt-1 block">مجموع الاشتراكات المسجلة</span>
+      </div>
+
+      <!-- 2. Active Subscriptions -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden group hover:border-emerald-500/50 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold">اشتراكات نشطة</span>
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-emerald-400" id="stat-activeSubscribers">0</div>
+        <span class="text-[11px] text-emerald-400/80 mt-1 block">تعمل بكفاءة</span>
+      </div>
+
+      <!-- 3. Expiring Soon -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden group hover:border-amber-500/50 transition cursor-pointer" onclick="filterByStatus('expiring')">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold">تنتهي قريباً</span>
+          <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <i data-lucide="clock" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-amber-400" id="stat-expiringSubscribers">0</div>
+        <span class="text-[11px] text-amber-400/80 mt-1 block">خلال 5 أيام أو أقل</span>
+      </div>
+
+      <!-- 4. Expired -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden group hover:border-rose-500/50 transition cursor-pointer" onclick="filterByStatus('expired')">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold">اشتراكات منتهية</span>
+          <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
+            <i data-lucide="x-circle" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-rose-400" id="stat-expiredSubscribers">0</div>
+        <span class="text-[11px] text-rose-400/80 mt-1 block">بحاجة للتجديد</span>
+      </div>
+
+      <!-- 5. Total Revenue -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden group hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold">إجمالي المبيعات</span>
+          <div class="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center">
+            <i data-lucide="wallet" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-sky-300" id="stat-totalRevenue">0 د.ج</div>
+        <span class="text-[11px] text-slate-400 mt-1 block">سعر البيع للزبائن</span>
+      </div>
+
+      <!-- 6. Total Cost (Real Price) -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden group hover:border-slate-500/50 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold">التكلفة الحقيقية</span>
+          <div class="w-7 h-7 rounded-lg bg-slate-500/10 text-slate-300 flex items-center justify-center">
+            <i data-lucide="credit-card" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-slate-300" id="stat-totalCost">0 د.ج</div>
+        <span class="text-[11px] text-slate-400 mt-1 block">سعر الشراء الفعلي</span>
+      </div>
+
+      <!-- 7. Total Net Profit & Margin % -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden border-cyan-500/40 bg-gradient-to-br from-cyan-950/40 via-slate-900/60 to-blue-950/40 col-span-2 md:col-span-2 lg:col-span-1 shadow-lg shadow-cyan-950/30">
+        <div class="flex items-center justify-between text-cyan-300 mb-2">
+          <span class="text-xs font-bold">صافي الأرباح</span>
+          <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+            <i data-lucide="trending-up" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-cyan-400" id="stat-netProfit">0 د.ج</div>
+        <div class="flex items-center justify-between mt-1 text-[11px]">
+          <span class="text-slate-400">نسبة الربح:</span>
+          <span class="font-bold text-emerald-400" id="stat-profitMargin">0%</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SUBSCRIPTIONS & CLIENTS MANAGEMENT -->
+    <!-- ========================================== -->
+    <div id="tabContent-subs" class="space-y-6">
+      
+      <!-- Search & Filters Toolbar -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Search bar -->
+        <div class="relative w-full md:w-80">
+          <i data-lucide="search" class="w-4 h-4 absolute right-3.5 top-3.5 text-slate-400"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="بحث بالاسم، ميسنجر، نوع الاشتراك، أو الإيميل..." 
+            oninput="renderSubscriptions()" 
+            class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl pr-10 pl-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+          >
+        </div>
+
+        <!-- Filter Buttons & Dynamic Service Category -->
+        <div class="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end">
+          
+          <!-- Status Filters -->
+          <div class="flex items-center bg-slate-900/90 border border-slate-800 p-1 rounded-xl text-xs">
+            <button onclick="setStatusFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg font-bold bg-cyan-600 text-white transition">الكل (<span id="count-all">0</span>)</button>
+            <button onclick="setStatusFilter('active')" id="filter-active" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-emerald-400 transition">نشط (<span id="count-active">0</span>)</button>
+            <button onclick="setStatusFilter('expiring')" id="filter-expiring" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-amber-400 transition">قارب على الانتهاء (<span id="count-expiring">0</span>)</button>
+            <button onclick="setStatusFilter('expired')" id="filter-expired" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-rose-400 transition">منتهي (<span id="count-expired">0</span>)</button>
+          </div>
+
+          <!-- Dynamic Service Filter Dropdown (populates from what the user typed) -->
+          <select id="serviceFilterSelect" onchange="renderSubscriptions()" class="bg-slate-900/90 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 cursor-pointer focus:ring-1 focus:ring-cyan-500">
+            <option value="all">كل الاشتراكات المدخلة</option>
+          </select>
+
+          <!-- Export CSV / Print Quick Buttons -->
+          <button onclick="exportToCSV()" title="تصدير إلى Excel / CSV" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs transition border border-slate-700">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+          </button>
+          <button onclick="window.print()" title="طباعة كشف الحسابات" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs transition border border-slate-700">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- Subscriptions Table Container -->
+      <div class="glass-card rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-right border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 text-xs font-bold uppercase tracking-wider">
+                <th class="py-3.5 px-4">الزبون وحساب ميسنجر</th>
+                <th class="py-3.5 px-4">نوع الاشتراك</th>
+                <th class="py-3.5 px-4">تاريخ الشراء والمدة</th>
+                <th class="py-3.5 px-4">تاريخ الانتهاء والمتبقي</th>
+                <th class="py-3.5 px-4">بيانات الاشتراك / الخانة</th>
+                <th class="py-3.5 px-4">التكلفة والبيع (د.ج)</th>
+                <th class="py-3.5 px-4">صافي الربح والنسبة</th>
+                <th class="py-3.5 px-4">الحالة</th>
+                <th class="py-3.5 px-4 text-center">التواصل والتجديد عبر ميسنجر</th>
+              </tr>
+            </thead>
+            <tbody id="subscriptionsTableBody" class="divide-y divide-slate-800/60">
+              <!-- Subscriptions will be populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden p-12 text-center">
+          <div class="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-500">
+            <i data-lucide="inbox" class="w-8 h-8"></i>
+          </div>
+          <h3 class="text-base font-bold text-slate-300 mb-1">لا توجد اشتراكات تطابق هذا البحث</h3>
+          <p class="text-xs text-slate-500 mb-4">يمكنك إضافة اشتراك جديد بسهولة وكتابة نوع الاشتراك المفضل لديك بحرية.</p>
+          <button onclick="openAddSubscriptionModal()" class="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>إضافة زبون جديد الآن</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: SMART PROFIT & MARGIN CALCULATOR    -->
+    <!-- ========================================== -->
+    <div id="tabContent-calc" class="hidden space-y-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Live Pricing & Margin Calculator Card -->
+        <div class="lg:col-span-7 glass-card rounded-3xl p-6 border border-cyan-500/30 relative">
+          <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+              <i data-lucide="calculator" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-white">حاسبة تسعير المنتجات وحساب نسبة الربح (بالدينار الجزائري)</h2>
+              <p class="text-xs text-slate-400">احسب صافي الربح وهامش الربح الحقيقي لكل منتج بدقة فورية</p>
+            </div>
+          </div>
+
+          <!-- Mode Selector Tabs inside calculator -->
+          <div class="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-xl text-xs mb-6">
+            <button id="calcMode-1" onclick="setCalcMode(1)" class="flex-1 py-2 rounded-lg font-bold bg-cyan-600 text-white transition text-center">
+              الوضع 1: حساب الربح من سعر التكلفة وسعر البيع
+            </button>
+            <button id="calcMode-2" onclick="setCalcMode(2)" class="flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition text-center">
+              الوضع 2: تحديد سعر البيع بناءً على نسبة الربح %
+            </button>
+          </div>
+
+          <!-- Form Inputs -->
+          <div class="space-y-4">
+            
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1.5">اكتب نوع الاشتراك أو اسم المنتج (اختياري)</label>
+              <input type="text" id="calcProductName" placeholder="اكتب اسم الاشتراك بحرية (مثال: اشتراك نتفلكس 4K، شاهد VIP، إلخ...)" oninput="runStandaloneCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Real Cost Price -->
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                  السعر الحقيقي / سعر التكلفة (د.ج)
+                  <span class="text-rose-400">*</span>
+                </label>
+                <div class="relative">
+                  <input type="number" step="any" id="calcCostPrice" value="800" oninput="runStandaloneCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-base font-bold text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                  <span class="absolute left-3.5 top-2.5 text-xs text-slate-400 font-bold">د.ج</span>
+                </div>
+                <span class="text-[11px] text-slate-500 mt-1 block">كم كلفك الحساب أو الاشتراك بالدينار الجزائري</span>
+              </div>
+
+              <!-- Mode 1: Selling Price -->
+              <div id="calcInput-sellingWrapper">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                  سعر البيع للزبون (د.ج)
+                  <span class="text-emerald-400">*</span>
+                </label>
+                <div class="relative">
+                  <input type="number" step="any" id="calcSellingPrice" value="1600" oninput="runStandaloneCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-base font-bold text-emerald-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                  <span class="absolute left-3.5 top-2.5 text-xs text-slate-400 font-bold">د.ج</span>
+                </div>
+                <span class="text-[11px] text-slate-500 mt-1 block">السعر الذي يدفعه الزبون</span>
+              </div>
+
+              <!-- Mode 2: Target Margin % -->
+              <div id="calcInput-targetMarginWrapper" class="hidden">
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                  نسبة الربح المستهدفة (%)
+                  <span class="text-cyan-400">*</span>
+                </label>
+                <div class="relative">
+                  <input type="number" step="any" id="calcTargetMargin" value="50" oninput="runStandaloneCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-base font-bold text-cyan-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                  <span class="absolute left-3.5 top-2.5 text-sm text-slate-400 font-bold">%</span>
+                </div>
+                <span class="text-[11px] text-slate-500 mt-1 block">النسبة المئوية المرغوبة من سعر البيع</span>
+              </div>
+            </div>
+
+            <!-- Instant Calculation Display Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3">
+              
+              <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center">
+                <span class="text-[11px] text-slate-400 block mb-1">صافي الربح</span>
+                <span id="calcRes-netProfit" class="text-xl font-black text-cyan-400">+800 د.ج</span>
+              </div>
+
+              <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center">
+                <span class="text-[11px] text-slate-400 block mb-1">هامش الربح (Margin)</span>
+                <span id="calcRes-marginPercent" class="text-xl font-black text-emerald-400">50.0%</span>
+              </div>
+
+              <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center">
+                <span class="text-[11px] text-slate-400 block mb-1">العائد على التكلفة (ROI)</span>
+                <span id="calcRes-markupPercent" class="text-xl font-black text-blue-400">+100.0%</span>
+              </div>
+
+              <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center">
+                <span class="text-[11px] text-slate-400 block mb-1">تقييم العملية</span>
+                <span id="calcRes-badge" class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  ربح ممتاز 🚀
+                </span>
+              </div>
+
+            </div>
+
+            <!-- Visual Profit Breakdown Bar -->
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+              <div class="flex justify-between text-xs text-slate-300 mb-2 font-medium">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-600 inline-block"></span> التكلفة الحقيقية: <strong id="calcBar-costText">800 د.ج</strong> (<span id="calcBar-costPercent">50.0%</span>)</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span> صافي الأرباح: <strong id="calcBar-profitText">800 د.ج</strong> (<span id="calcBar-profitPercent">50.0%</span>)</span>
+              </div>
+              <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden flex">
+                <div id="calcBar-costFill" class="bg-slate-500 transition-all duration-300" style="width: 50.0%;"></div>
+                <div id="calcBar-profitFill" class="bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300" style="width: 50.0%;"></div>
+              </div>
+            </div>
+
+            <!-- Action: Apply to New Subscription Modal -->
+            <div class="pt-2 flex items-center justify-between">
+              <button onclick="applyCalcToNewModal()" class="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-cyan-600/20">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>تسجيل اشتراك جديد بهذه الأسعار</span>
+              </button>
+              <button onclick="copyCalcResultText()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3.5 py-2.5 rounded-xl text-xs font-bold transition">
+                <i data-lucide="copy" class="w-4 h-4 text-cyan-400"></i>
+                <span>نسخ نتيجة التسعير</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Profit Distribution Chart -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- Profit by Service Chart -->
+          <div class="glass-card rounded-3xl p-5 border border-slate-800">
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-cyan-400"></i>
+              <span>توزيع أرباح الاشتراكات في HSY SHOP (د.ج)</span>
+            </h3>
+            <div class="h-64 relative flex items-center justify-center">
+              <canvas id="profitChart"></canvas>
+            </div>
+            <p class="text-[11px] text-slate-500 text-center mt-2">يتم تحديث الرسم البياني تلقائياً وفقاً للأنواع التي تسجلها بنفسك</p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: ADMIN SHARING & REPORTS HUB         -->
+    <!-- (NO MESSENGER - DIRECT LINKS & BACKUPS)    -->
+    <!-- ========================================== -->
+    <div id="tabContent-admin" class="hidden space-y-6">
+      
+      <div class="glass-card rounded-3xl p-6 border border-cyan-500/30">
+        
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white">مركز مشاركة الرابط والتقارير مع الـ Admin</h2>
+              <p class="text-xs text-slate-400">مشاركة روابط لوحة التحكم المباشرة، نسخ التقارير المالية، والنسخ الاحتياطية</p>
+            </div>
+          </div>
+
+          <!-- Logo Stamp -->
+          <div class="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
+            <img src="assets/logo.png" alt="HSY SHOP" class="w-8 h-8 rounded-full border border-cyan-400 object-cover bg-white">
+            <span class="text-xs font-bold text-cyan-300">HSY SHOP Admin Panel</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+          
+          <!-- Card 1: Copy Admin Report -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm">
+              <i data-lucide="file-text" class="w-4 h-4"></i>
+              <span>تقرير المبيعات والأرباح الشامل للأدمن</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              تقرير مالي وإداري منسق ومحدث لحظياً يحتوي على ملخص المشتركين، المبيعات، التكلفة الحقيقية، وصافي الأرباح.
+            </p>
+
+            <!-- Previews -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 font-mono space-y-1 max-h-36 overflow-y-auto select-all" id="adminReportPreview">
+              <!-- Dynamically generated text -->
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="copyAdminReportText()" class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-cyan-600/20">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+                <span>نسخ التقرير المالي للأدمن</span>
+              </button>
+              <button onclick="window.print()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs transition border border-slate-700" title="طباعة التقرير">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Direct Admin URL & Cloud Backups -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm">
+              <i data-lucide="link-2" class="w-4 h-4"></i>
+              <span>رابط لوحة التحكم المباشر للأدمن</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              انسخ الرابط المباشر للوحة التحكم لإرساله إلى الأدمن عبر أي وسيلة، أو شارك رابط مشفر بكامل البيانات.
+            </p>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">رابط لوحة التحكم الحالي</label>
+              <div class="flex items-center gap-2">
+                <input type="text" id="adminPageLinkInput" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-cyan-300 font-mono select-all">
+                <button onclick="copyAdminPageLink()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>نسخ الرابط</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Export / Backup / Share Data -->
+            <div class="pt-2 border-t border-slate-800/80 space-y-2">
+              <span class="text-xs font-bold text-slate-300 block mb-2">إدارة النسخ الاحتياطية للبيانات:</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="exportBackupJSON()" class="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-bold transition border border-slate-700">
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-400"></i>
+                  <span>تحميل نسخة احتياطية (JSON)</span>
+                </button>
+                <button onclick="document.getElementById('importBackupFileInput').click()" class="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-bold transition border border-slate-700">
+                  <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>استرجاع نسخة احتياطية</span>
+                </button>
+                <input type="file" id="importBackupFileInput" class="hidden" accept=".json" onchange="importBackupJSON(event)">
+              </div>
+              <button onclick="generateDataShareLink()" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-md">
+                <i data-lucide="share" class="w-4 h-4"></i>
+                <span>إنشاء رابط سحابي مشفر يحتوي على كل البيانات</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD / EDIT SUBSCRIPTION             -->
+  <!-- ========================================== -->
+  <div id="subscriptionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass-card rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-cyan-500/40 p-6 space-y-6 my-auto shadow-2xl">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="modalTitle" class="text-lg font-bold text-white">إضافة اشتراك وزبون جديد - HSY SHOP</h3>
+            <p class="text-xs text-slate-400">أدخل تفاصيل الزبون والاشتراك وخانات الحساب بحرية كاملة</p>
+          </div>
+        </div>
+        <button onclick="closeSubscriptionModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form id="subscriptionForm" onsubmit="saveSubscription(event)" class="space-y-4">
+        <input type="hidden" id="subId">
+
+        <!-- 1. Customer Info & Messenger (FOR CUSTOMERS ONLY) -->
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+          <h4 class="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="user" class="w-3.5 h-3.5"></i>
+            <span>بيانات الزبون وحساب ميسنجر للتجديد والمراسلة</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">اسم الزبون <span class="text-rose-400">*</span></label>
+              <input type="text" id="subCustomerName" required placeholder="اكتب اسم الزبون..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 fill-current text-blue-400" viewBox="0 0 24 24">
+                  <path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.514 3.734 7.214V22l3.39-1.86c.92.254 1.89.39 2.876.39 5.523 0 10-4.145 10-9.258C22 6.145 17.523 2 12 2zm1.066 12.434l-2.582-2.756-5.042 2.756 5.545-5.884 2.646 2.756 4.978-2.756-5.545 5.884z"/>
+                </svg>
+                <span>حساب أو رابط ميسنجر الزبون (للتجديد والتواصل)</span>
+              </label>
+              <input type="text" id="subCustomerMessenger" placeholder="مثال: faycal.dz أو رابط الحساب أو اسم المستخدم" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Subscription Type (FREE TEXT INPUT), Dates & Duration -->
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+          <h4 class="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+            <span>تفاصيل الاشتراك والمدة</span>
+          </h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Service Type: FREE USER-DEFINED TEXT INPUT -->
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">
+                نوع الاشتراك / الخدمة (اكتب ما تريده بحرية) <span class="text-rose-400">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="subServiceInput" 
+                required 
+                placeholder="اكتب نوع الاشتراك (مثال: نتفلكس، شاهد، IPTV، كانفا برو، بي إن سبورت...)" 
+                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-medium"
+              >
+              <span class="text-[11px] text-cyan-400 mt-1 block">أنت من يحدد نوع الاشتراك بحرية دون أي قيود</span>
+            </div>
+
+            <!-- Duration Selector -->
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">مدة الاشتراك <span class="text-rose-400">*</span></label>
+              <div class="grid grid-cols-4 gap-1 text-xs">
+                <button type="button" onclick="setSubDuration(1, 'month')" class="duration-btn py-2 rounded-lg bg-cyan-600 text-white font-bold transition text-center" data-duration="1-month">شهر</button>
+                <button type="button" onclick="setSubDuration(3, 'months')" class="duration-btn py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition text-center" data-duration="3-months">3 أشهر</button>
+                <button type="button" onclick="setSubDuration(6, 'months')" class="duration-btn py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition text-center" data-duration="6-months">6 أشهر</button>
+                <button type="button" onclick="setSubDuration(1, 'year')" class="duration-btn py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition text-center" data-duration="1-year">سنة</button>
+              </div>
+              <input type="hidden" id="subDurationValue" value="1 شهر">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <!-- Purchase Date -->
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">تاريخ الشراء / البدء <span class="text-rose-400">*</span></label>
+              <input type="date" id="subStartDate" required onchange="calculateExpiryDate()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+
+            <!-- Expiry Date -->
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">تاريخ ووقت الانتهاء <span class="text-rose-400">*</span></label>
+              <input type="date" id="subEndDate" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+              <span class="text-[11px] text-cyan-400 mt-1 block" id="subDaysRemainingPreview">محسوب تلقائياً بناءً على المدة</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. Account Slots & Credentials (خانات الاشتراكات) -->
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+          <h4 class="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <i data-lucide="key" class="w-3.5 h-3.5"></i>
+              <span>خانات وبيانات الاشتراك (Account Credentials & Slot)</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-normal">تظهر للزبون عند طلب الفاتورة</span>
+          </h4>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">بريد الحساب / اسم المستخدم</label>
+              <input type="text" id="subAccountEmail" placeholder="example@email.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">كلمة المرور (Password)</label>
+              <input type="text" id="subAccountPassword" placeholder="كلمة المرور" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-mono">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">رقم أو اسم الملف (Profile / Slot)</label>
+              <input type="text" id="subProfileSlot" placeholder="مثال: شاشة 2 أو ملف رقم 4" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">رمز قفل الملف (PIN Code)</label>
+              <input type="text" id="subProfilePin" placeholder="مثال: 1234" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">نوع التخصيص</label>
+              <select id="subAccountType" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                <option value="شاشة خاصة (Profile)">شاشة خاصة (Profile)</option>
+                <option value="حساب كامل (Full Account)">حساب كامل (Full Account)</option>
+                <option value="تفعيل على إيميل الزبون">تفعيل على إيميل الزبون</option>
+                <option value="مفتاح رقمي (License Key)">مفتاح رقمي (License Key)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">ملاحظات أو شروط الاستخدام للزبون</label>
+            <input type="text" id="subNotes" placeholder="مثال: يمنع تغيير كلمة المرور أو تعديل الملفات الأخرى" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white">
+          </div>
+        </div>
+
+        <!-- 4. Pricing & Profit Calculation (بالدينار الجزائري) -->
+        <div class="bg-gradient-to-br from-slate-900/90 to-cyan-950/30 p-4 rounded-2xl border border-cyan-500/30 space-y-3">
+          <h4 class="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <i data-lucide="badge-dollar-sign" class="w-3.5 h-3.5"></i>
+              <span>التسعير وحاسبة الربح التلقائية (بالدينار الجزائري)</span>
+            </span>
+            <span class="text-xs font-bold text-emerald-400" id="subModalLiveProfitBadge">الربح: +0 د.ج (0%)</span>
+          </h4>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">
+                السعر الحقيقي / سعر التكلفة (د.ج) <span class="text-rose-400">*</span>
+              </label>
+              <input type="number" step="any" id="subCostPrice" required placeholder="مثال: 800" oninput="calcSubModalProfit()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-base font-bold text-white focus:border-cyan-500">
+              <span class="text-[11px] text-slate-400 mt-1 block">سعر الشراء الفعلي بالدينار الجزائري</span>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">
+                سعر البيع للزبون (د.ج) <span class="text-emerald-400">*</span>
+              </label>
+              <input type="number" step="any" id="subSellingPrice" required placeholder="مثال: 1600" oninput="calcSubModalProfit()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-base font-bold text-emerald-400 focus:border-cyan-500">
+              <span class="text-[11px] text-slate-400 mt-1 block">السعر المستلم من الزبون بالدينار الجزائري</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex items-center justify-end gap-3 pt-3">
+          <button type="button" onclick="closeSubscriptionModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+            إلغاء
+          </button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold transition shadow-lg shadow-cyan-500/20 flex items-center gap-2">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span id="saveSubBtnText">حفظ الاشتراك</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CLIENT INVOICE & CREDENTIALS RECEIPT-->
+  <!-- ========================================== -->
+  <div id="receiptModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass-card rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-cyan-500/40 p-6 space-y-5 my-auto shadow-2xl">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="receipt" class="w-4 h-4 text-cyan-400"></i>
+          <span>فاتورة وبيانات اشتراك الزبون</span>
+        </h3>
+        <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Printable Area -->
+      <div id="print-area" class="bg-gradient-to-b from-slate-900 to-[#07111e] border border-cyan-500/30 rounded-2xl p-6 text-slate-100 relative space-y-4 shadow-inner">
+        
+        <!-- Header with HSY SHOP Logo -->
+        <div class="text-center pb-4 border-b border-slate-800 flex flex-col items-center">
+          <img src="assets/logo.png" alt="HSY SHOP" class="w-16 h-16 rounded-full border-2 border-cyan-400 mb-2 object-cover bg-white shadow-md">
+          <h2 class="text-xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">HSY SHOP</h2>
+          <p class="text-[11px] text-slate-400">فاتورة اشتراك رسمية ومعلومات الحساب (الجزائر)</p>
+        </div>
+
+        <!-- Details List -->
+        <div class="space-y-2.5 text-xs">
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">الزبون المحترم:</span>
+            <span class="font-bold text-white" id="rcptCustomer">---</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">حساب ميسنجر:</span>
+            <span class="font-bold text-blue-400" id="rcptMessenger">---</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">نوع الخدمة / الاشتراك:</span>
+            <span class="font-bold text-cyan-300" id="rcptService">---</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">مدة الاشتراك:</span>
+            <span class="font-bold text-slate-200" id="rcptDuration">---</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">سعر الاشتراك:</span>
+            <span class="font-bold text-emerald-400" id="rcptPrice">--- د.ج</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">تاريخ البدء:</span>
+            <span class="font-medium text-slate-300" id="rcptStartDate">---</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">تاريخ الانتهاء:</span>
+            <span class="font-bold text-amber-400" id="rcptEndDate">---</span>
+          </div>
+        </div>
+
+        <!-- Account Credentials Box -->
+        <div class="bg-black/40 border border-slate-800 rounded-xl p-3.5 space-y-2 text-xs">
+          <div class="font-bold text-cyan-400 flex items-center gap-1.5 mb-1">
+            <i data-lucide="key" class="w-3.5 h-3.5"></i>
+            <span>بيانات تسجيل الدخول للخدمة:</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">البريد / الحساب:</span>
+            <span class="font-mono text-white select-all" id="rcptEmail">---</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">كلمة المرور:</span>
+            <span class="font-mono text-white select-all" id="rcptPassword">---</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">الملف / الشاشة:</span>
+            <span class="font-bold text-white" id="rcptSlot">---</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">رمز القفل (PIN):</span>
+            <span class="font-mono text-white" id="rcptPin">---</span>
+          </div>
+        </div>
+
+        <!-- Notice -->
+        <div class="bg-cyan-950/30 border border-cyan-500/20 rounded-xl p-2.5 text-[11px] text-cyan-200/90 leading-relaxed">
+          <p id="rcptNotes">نتمنى لك تجربة ممتعة! يرجى الالتزام بعدم تغيير بيانات الحساب أو استخدام ملفات أخرى لضمان استمرار الخدمة.</p>
+        </div>
+
+        <div class="text-center text-[10px] text-slate-500 pt-1">
+          شكراً لثقتكم بمتجر HSY SHOP ❤️🇩🇿
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="sendReceiptToCustomerMessenger()" class="flex-1 flex items-center justify-center gap-2 btn-messenger py-2.5 rounded-xl text-xs font-bold transition shadow-md">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.514 3.734 7.214V22l3.39-1.86c.92.254 1.89.39 2.876.39 5.523 0 10-4.145 10-9.258C22 6.145 17.523 2 12 2zm1.066 12.434l-2.582-2.756-5.042 2.756 5.545-5.884 2.646 2.756 4.978-2.756-5.545 5.884z"/>
+          </svg>
+          <span>إرسال للزبون عبر ميسنجر</span>
+        </button>
+        <button onclick="copyReceiptText()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs transition border border-slate-700" title="نسخ الكليشة النصية">
+          <i data-lucide="copy" class="w-4 h-4"></i>
+        </button>
+        <button onclick="window.print()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs transition border border-slate-700" title="طباعة الفاتورة">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADMIN SHARE POPUP                   -->
+  <!-- ========================================== -->
+  <div id="adminShareModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-md w-full border border-cyan-500/40 p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
+          <span>مشاركة رابط لوحة التحكم والتقرير مع الأدمن</span>
+        </h3>
+        <button onclick="closeAdminShareModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        يمكنك نسخ الرابط المباشر للوحة التحكم لمشاركته مع الأدمن، أو نسخ التقرير المالي الشامل كاملاً.
+      </p>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-300">رابط الصفحة المباشر للأدمن:</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="quickAdminLinkInput" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-cyan-300 font-mono select-all">
+          <button onclick="copyQuickAdminLink()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-bold">نسخ</button>
+        </div>
+      </div>
+
+      <div class="pt-2 flex flex-col gap-2">
+        <button onclick="copyAdminReportText()" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-cyan-600/20">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>نسخ التقرير المالي الشامل كاملاً</span>
+        </button>
+        <button onclick="switchTab('admin'); closeAdminShareModal()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+          <span>فتح مركز تحكم الأدمن والنسخ الاحتياطي</span>
+        </button>
+      </div>
+    <!-- MODAL: OPEN ON PHONE (QR CODE & LINKS) -->
+  <div id="phoneModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass-card rounded-3xl max-w-md w-full border border-cyan-500/40 p-6 space-y-4 shadow-2xl text-center my-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-right">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="smartphone" class="w-4 h-4 text-cyan-400"></i>
+          <span>فتح الموقع على الهاتف (Phone Link)</span>
+        </h3>
+        <button onclick="closePhoneModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- QR Code Container -->
+      <div class="bg-white p-3 rounded-2xl inline-block shadow-2xl mx-auto my-1 border-4 border-cyan-400/40">
+        <img id="qrCodeImage" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://reproduction-majority-particular-configure.trycloudflare.com" alt="QR Code" class="w-48 h-48 mx-auto object-contain">
+      </div>
+      <p class="text-xs text-slate-300 font-semibold">امسح الكود بكاميرا الهاتف لفتح الموقع فوراً 📷</p>
+
+      <!-- Option 1: Public Cloudflare Link (Direct & Zero Password) -->
+      <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-cyan-500/30 text-right space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+            <i data-lucide="globe" class="w-4 h-4"></i>
+            <span>الرابط العام (أرسله لأي شخص / يعمل من أي مكان)</span>
+          </span>
+          <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/30 font-bold">عالمي ومباشر 🌐</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" id="tunnelPhoneLink" readonly value="https://reproduction-majority-particular-configure.trycloudflare.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-cyan-300 font-mono select-all">
+          <button onclick="copyTunnelPhoneLink()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">نسخ</button>
+        </div>
+        <span class="text-[11px] text-slate-400 block">يعمل على أي هاتف أو حاسوب في العالم بدون أي كلمات مرور</span>
+      </div>
+
+      <!-- Option 2: Wi-Fi Local Link -->
+      <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800 text-right space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+            <i data-lucide="wifi" class="w-4 h-4"></i>
+            <span>الرابط المحلي (شبكة الواي فاي المنزلية)</span>
+          </span>
+          <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">شبكة محلية</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" id="wifiPhoneLink" readonly value="http://192.168.0.100:3000" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-emerald-300 font-mono select-all">
+          <button onclick="copyWifiPhoneLink()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">نسخ</button>
+        </div>
+        <span class="text-[11px] text-slate-400 block">لأجهزتك المتصلة بنفس شبكة المودم/الراوتر</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="fixed bottom-5 left-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div id="toastContent" class="bg-slate-900 border border-cyan-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold">
+      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+      <span id="toastMessage">تمت العملية بنجاح</span>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <script>
+    // Currency is permanently fixed to Algerian Dinar (د.ج)
+    const currentCurrency = 'د.ج';
+    let currentStatusFilter = 'all';
+    let calcMode = 1; // 1: Cost + Selling -> Profit, 2: Cost + Target Margin % -> Selling
+    let activeReceiptSub = null;
+    let profitChartInstance = null;
+
+    // Initial data contains exactly 1 customer, and user can add/edit/delete any customer
+    const defaultSubscriptions = [
+      {
+        id: 'HSY-101',
+        customerName: 'أحمد بن علي',
+        messenger: 'ahmed.benali.dz',
+        service: 'Netflix 4K Ultra',
+        accountType: 'شاشة خاصة (Profile)',
+        startDate: getRelativeDateString(-5),
+        duration: 'شهر واحد',
+        endDate: getRelativeDateString(25),
+        accountEmail: 'hsy.netflix01@gmail.com',
+        accountPassword: 'HsyPass2026@',
+        profileSlot: 'شاشة 1 (PIN: 1994)',
+        profilePin: '1994',
+        costPrice: 500,
+        sellingPrice: 1200,
+        notes: 'دفع عبر BaridiMob - زبون دائم'
+      }
+    ];
+
+    // Helper: relative dates
+    function getRelativeDateString(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      return d.toISOString().split('T')[0];
+    }
+
+    // Helper to extract clean Messenger username
+    function cleanMessengerUsername(input) {
+      if (!input) return '';
+      let str = input.trim();
+      str = str.replace(/https?:\/\/(www\.)?(facebook\.com|m\.me)\//i, '');
+      str = str.replace(/^@/, '');
+      str = str.split('/')[0].split('?')[0];
+      return str;
+    }
+
+    // Storage key for 1-customer initial database
+    const STORAGE_KEY = 'hsy_shop_subscribers_v3';
+
+    // Load Subscriptions from localStorage or initialize with the 1 customer
+    function getSubscriptions() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      return [...defaultSubscriptions];
+    }
+
+    function saveSubscriptionsList(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      updateDashboard();
+    }
+
+    // Function to clear all customers
+    function clearAllSubscriptions() {
+      if (confirm('هل أنت متأكد من رغبتك في مسح كافة الاشتراكات المسجلة والبدء من الصفر؟')) {
+        saveSubscriptionsList([]);
+        showToast('تم مسح كافة الزبائن بنجاح (الموقع فارغ الآن) 🗑️');
+      }
+    }
+
+    // Initialize application on DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default date in modal to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('subStartDate').value = today;
+      calculateExpiryDate();
+
+      // Update Page link inputs
+      const currentUrl = window.location.href;
+      document.getElementById('adminPageLinkInput').value = currentUrl;
+      document.getElementById('quickAdminLinkInput').value = currentUrl;
+
+      // Update everything
+      updateDashboard();
+      runStandaloneCalc();
+      lucide.createIcons();
+    });
+
+    // Tab Navigation
+    function switchTab(tab) {
+      const tabs = ['subs', 'calc', 'admin'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtn-${t}`);
+        const content = document.getElementById(`tabContent-${t}`);
+        if (t === tab) {
+          btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-white';
+          content.classList.add('hidden');
+        }
+      });
+
+      if (tab === 'calc') {
+        renderProfitChart();
+      } else if (tab === 'admin') {
+        updateAdminReportPreview();
+      }
+      lucide.createIcons();
+    }
+
+    // Status Determination Helper
+    function getSubscriptionStatus(endDateStr) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const end = new Date(endDateStr);
+      end.setHours(0, 0, 0, 0);
+
+      const diffTime = end - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        return { status: 'expired', label: 'منتهي الصلاحية', days: diffDays, badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/30' };
+      } else if (diffDays <= 5) {
+        return { status: 'expiring', label: `ينتهي خلال ${diffDays} يوم`, days: diffDays, badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/30' };
+      } else {
+        return { status: 'active', label: `نشط (${diffDays} يوم)`, days: diffDays, badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' };
+      }
+    }
+
+    // Dynamically update the toolbar service filter based on the distinct services typed by the user
+    function updateServiceFilterOptions() {
+      const subs = getSubscriptions();
+      const select = document.getElementById('serviceFilterSelect');
+      if (!select) return;
+
+      const currentVal = select.value;
+      const services = Array.from(new Set(subs.map(s => s.service).filter(Boolean)));
+
+      let optionsHtml = '<option value="all">كل الاشتراكات المدخلة</option>';
+      services.forEach(srv => {
+        optionsHtml += `<option value="${srv}">${srv}</option>`;
+      });
+      select.innerHTML = optionsHtml;
+
+      if (services.includes(currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    // Update Dashboard (KPIs, Table, Notifications)
+    function updateDashboard() {
+      const subs = getSubscriptions();
+
+      let totalRevenue = 0;
+      let totalCost = 0;
+      let activeCount = 0;
+      let expiringCount = 0;
+      let expiredCount = 0;
+
+      subs.forEach(sub => {
+        const cost = parseFloat(sub.costPrice) || 0;
+        const sell = parseFloat(sub.sellingPrice) || 0;
+        totalRevenue += sell;
+        totalCost += cost;
+
+        const info = getSubscriptionStatus(sub.endDate);
+        if (info.status === 'active') activeCount++;
+        else if (info.status === 'expiring') expiringCount++;
+        else if (info.status === 'expired') expiredCount++;
+      });
+
+      const netProfit = totalRevenue - totalCost;
+      const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
+
+      // Update KPI Elements
+      document.getElementById('stat-totalSubscribers').textContent = subs.length;
+      document.getElementById('stat-activeSubscribers').textContent = activeCount;
+      document.getElementById('stat-expiringSubscribers').textContent = expiringCount;
+      document.getElementById('stat-expiredSubscribers').textContent = expiredCount;
+
+      document.getElementById('stat-totalRevenue').textContent = `${Math.round(totalRevenue).toLocaleString('ar-DZ')} د.ج`;
+      document.getElementById('stat-totalCost').textContent = `${Math.round(totalCost).toLocaleString('ar-DZ')} د.ج`;
+      document.getElementById('stat-netProfit').textContent = `+${Math.round(netProfit).toLocaleString('ar-DZ')} د.ج`;
+      document.getElementById('stat-profitMargin').textContent = `${profitMargin}%`;
+
+      // Update Filter counts
+      document.getElementById('count-all').textContent = subs.length;
+      document.getElementById('count-active').textContent = activeCount;
+      document.getElementById('count-expiring').textContent = expiringCount;
+      document.getElementById('count-expired').textContent = expiredCount;
+
+      // Top notification banner
+      const banner = document.getElementById('topExpiringBanner');
+      if (expiringCount > 0) {
+        banner.classList.remove('hidden');
+        document.getElementById('expiringBannerText').textContent = `تنبيه من متجر HSY: يوجد (${expiringCount}) اشتراكات ستنتهي خلال 5 أيام أو أقل! اضغط على زر ميسنجر لتذكير الزبائن بالتجديد.`;
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      updateServiceFilterOptions();
+      renderSubscriptions();
+      updateAdminReportPreview();
+    }
+
+    // Render Subscriptions Table with Search & Filter
+    function renderSubscriptions() {
+      const subs = getSubscriptions();
+      const searchQuery = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const serviceFilter = document.getElementById('serviceFilterSelect').value;
+      const tbody = document.getElementById('subscriptionsTableBody');
+      const emptyState = document.getElementById('emptyState');
+
+      const filtered = subs.filter(sub => {
+        const info = getSubscriptionStatus(sub.endDate);
+
+        // Status filter
+        if (currentStatusFilter !== 'all' && info.status !== currentStatusFilter) {
+          return false;
+        }
+
+        // Service filter (matches whatever the user typed)
+        if (serviceFilter !== 'all' && sub.service !== serviceFilter) {
+          return false;
+        }
+
+        // Search Query
+        if (searchQuery) {
+          const matchName = (sub.customerName || '').toLowerCase().includes(searchQuery);
+          const matchMessenger = (sub.messenger || '').toLowerCase().includes(searchQuery);
+          const matchService = (sub.service || '').toLowerCase().includes(searchQuery);
+          const matchEmail = (sub.accountEmail || '').toLowerCase().includes(searchQuery);
+          const matchSlot = (sub.profileSlot || '').toLowerCase().includes(searchQuery);
+          return matchName || matchMessenger || matchService || matchEmail || matchSlot;
+        }
+
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(sub => {
+        const cost = parseFloat(sub.costPrice) || 0;
+        const sell = parseFloat(sub.sellingPrice) || 0;
+        const profit = sell - cost;
+        const margin = sell > 0 ? ((profit / sell) * 100).toFixed(0) : 0;
+        const info = getSubscriptionStatus(sub.endDate);
+
+        const cleanMsg = cleanMessengerUsername(sub.messenger);
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition group">
+            
+            <!-- Customer & Messenger -->
+            <td class="py-3 px-4">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <span>${sub.customerName}</span>
+              </div>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-xs text-blue-400 font-mono flex items-center gap-1">
+                  <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.514 3.734 7.214V22l3.39-1.86c.92.254 1.89.39 2.876.39 5.523 0 10-4.145 10-9.258C22 6.145 17.523 2 12 2zm1.066 12.434l-2.582-2.756-5.042 2.756 5.545-5.884 2.646 2.756 4.978-2.756-5.545 5.884z"/>
+                  </svg>
+                  ${sub.messenger || 'بدون حساب'}
+                </span>
+                ${cleanMsg ? `
+                  <a href="https://m.me/${cleanMsg}" target="_blank" title="مراسلة الزبون عبر ميسنجر" class="text-blue-400 hover:text-blue-300 p-0.5 rounded transition">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 inline"></i>
+                  </a>
+                ` : ''}
+              </div>
+            </td>
+
+            <!-- User-defined Service Type -->
+            <td class="py-3 px-4">
+              <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-bold border bg-cyan-950/40 text-cyan-300 border-cyan-700/50">
+                ${sub.service}
+              </span>
+              <div class="text-[11px] text-slate-400 mt-1">${sub.accountType || 'شاشة خاصة'}</div>
+            </td>
+
+            <!-- Start Date & Duration -->
+            <td class="py-3 px-4">
+              <div class="text-slate-300 text-xs font-medium">${sub.startDate}</div>
+              <div class="text-[11px] text-cyan-400 font-bold mt-0.5">${sub.duration || 'شهر واحد'}</div>
+            </td>
+
+            <!-- Expiry & Remaining -->
+            <td class="py-3 px-4">
+              <div class="text-xs font-bold ${info.status === 'expired' ? 'text-rose-400' : (info.status === 'expiring' ? 'text-amber-400' : 'text-slate-200')}">
+                ${sub.endDate}
+              </div>
+              <div class="text-[11px] mt-0.5 ${info.status === 'expired' ? 'text-rose-500' : 'text-slate-400'}">
+                ${info.days < 0 ? `انتهى منذ ${Math.abs(info.days)} يوم` : `باقي ${info.days} يوم`}
+              </div>
+            </td>
+
+            <!-- Slots & Credentials -->
+            <td class="py-3 px-4">
+              <div class="text-xs text-slate-300 font-semibold flex items-center gap-1">
+                <span>${sub.profileSlot || 'الملف الرئيسي'}</span>
+                ${sub.profilePin ? `<span class="bg-slate-800 text-slate-400 font-mono px-1 rounded text-[10px]">PIN: ${sub.profilePin}</span>` : ''}
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono truncate max-w-[150px]" title="${sub.accountEmail || ''}">
+                ${sub.accountEmail || 'لا يوجد بريد'}
+              </div>
+            </td>
+
+            <!-- Real Cost & Selling Price (DZD) -->
+            <td class="py-3 px-4">
+              <div class="text-xs font-bold text-slate-200">البيع: <span class="text-emerald-400">${Math.round(sell).toLocaleString('ar-DZ')} د.ج</span></div>
+              <div class="text-[11px] text-slate-400">التكلفة: <span class="text-slate-300">${Math.round(cost).toLocaleString('ar-DZ')} د.ج</span></div>
+            </td>
+
+            <!-- Net Profit & Margin % -->
+            <td class="py-3 px-4">
+              <div class="text-xs font-black ${profit >= 0 ? 'text-cyan-400' : 'text-rose-400'}">
+                ${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString('ar-DZ')} د.ج
+              </div>
+              <div class="text-[11px] font-bold text-emerald-400">
+                نسبة: ${margin}%
+              </div>
+            </td>
+
+            <!-- Status Badge -->
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${info.badgeClass}">
+                <span class="w-1.5 h-1.5 rounded-full ${info.status === 'active' ? 'bg-emerald-400' : (info.status === 'expiring' ? 'bg-amber-400 animate-ping' : 'bg-rose-400')}"></span>
+                <span>${info.label}</span>
+              </span>
+            </td>
+
+            <!-- Customer Actions: Messenger Renewal & Credentials -->
+            <td class="py-3 px-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                
+                <!-- Messenger Renewal Reminder Button (Exclusively for customer communication) -->
+                <button onclick="sendRenewalReminderMessenger('${sub.id}')" title="مراسلة الزبون لتجديد الاشتراك عبر ميسنجر" class="p-1.5 btn-messenger rounded-lg text-xs transition shadow-sm hover:scale-105 active:scale-95">
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.514 3.734 7.214V22l3.39-1.86c.92.254 1.89.39 2.876.39 5.523 0 10-4.145 10-9.258C22 6.145 17.523 2 12 2zm1.066 12.434l-2.582-2.756-5.042 2.756 5.545-5.884 2.646 2.756 4.978-2.756-5.545 5.884z"/>
+                  </svg>
+                </button>
+
+                <!-- Quick Invoice / Receipt View -->
+                <button onclick="openReceiptModal('${sub.id}')" title="فاتورة وبيانات الزبون" class="p-1.5 bg-cyan-950/60 hover:bg-cyan-900 text-cyan-300 rounded-lg text-xs transition border border-cyan-800">
+                  <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Quick Renew (1 more period) -->
+                <button onclick="quickRenewSubscription('${sub.id}')" title="تجديد الاشتراك فوراً" class="p-1.5 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 rounded-lg text-xs transition border border-emerald-800">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Edit -->
+                <button onclick="editSubscription('${sub.id}')" title="تعديل" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Delete -->
+                <button onclick="deleteSubscription('${sub.id}')" title="حذف" class="p-1.5 bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 rounded-lg text-xs transition">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+
+              </div>
+            </td>
+
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // Status Filter trigger
+    function setStatusFilter(status) {
+      currentStatusFilter = status;
+      ['all', 'active', 'expiring', 'expired'].forEach(s => {
+        const btn = document.getElementById(`filter-${s}`);
+        if (s === status) {
+          btn.className = 'px-3 py-1.5 rounded-lg font-bold bg-cyan-600 text-white transition';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+        }
+      });
+      renderSubscriptions();
+    }
+
+    function filterByStatus(status) {
+      switchTab('subs');
+      setStatusFilter(status);
+    }
+
+    // Duration Button Selection & Expiry auto-calculation
+    function setSubDuration(amount, unit) {
+      document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.classList.remove('bg-cyan-600', 'text-white', 'font-bold');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+
+      const label = `${amount} ${unit === 'year' ? 'سنة' : (amount === 1 ? 'شهر' : (amount === 3 ? '3 أشهر' : '6 أشهر'))}`;
+      document.getElementById('subDurationValue').value = label;
+
+      const target = document.querySelector(`[data-duration="${amount}-${unit}"]`);
+      if (target) {
+        target.classList.add('bg-cyan-600', 'text-white', 'font-bold');
+        target.classList.remove('bg-slate-800', 'text-slate-300');
+      }
+
+      calculateExpiryDate(amount, unit);
+    }
+
+    function calculateExpiryDate(amount = 1, unit = 'month') {
+      const startStr = document.getElementById('subStartDate').value;
+      if (!startStr) return;
+
+      const d = new Date(startStr);
+      if (unit === 'year') {
+        d.setFullYear(d.getFullYear() + amount);
+      } else if (unit === 'months' || unit === 'month') {
+        d.setMonth(d.getMonth() + amount);
+      } else if (unit === 'days') {
+        d.setDate(d.getDate() + amount);
+      }
+
+      const endStr = d.toISOString().split('T')[0];
+      document.getElementById('subEndDate').value = endStr;
+      
+      const statusInfo = getSubscriptionStatus(endStr);
+      document.getElementById('subDaysRemainingPreview').textContent = `تاريخ الانتهاء محسوب (${statusInfo.days} يوم متبقي)`;
+    }
+
+    // Modal Live Profit Calculation
+    function calcSubModalProfit() {
+      const cost = parseFloat(document.getElementById('subCostPrice').value) || 0;
+      const sell = parseFloat(document.getElementById('subSellingPrice').value) || 0;
+      const profit = sell - cost;
+      const margin = sell > 0 ? ((profit / sell) * 100).toFixed(1) : 0;
+
+      const badge = document.getElementById('subModalLiveProfitBadge');
+      if (profit >= 0) {
+        badge.className = 'text-xs font-bold text-emerald-400';
+        badge.textContent = `الربح: +${profit.toFixed(0)} د.ج (${margin}%)`;
+      } else {
+        badge.className = 'text-xs font-bold text-rose-400';
+        badge.textContent = `خسارة: ${profit.toFixed(0)} د.ج (${margin}%)`;
+      }
+    }
+
+    // Open Modal for Add
+    function openAddSubscriptionModal() {
+      document.getElementById('subscriptionForm').reset();
+      document.getElementById('subId').value = '';
+      document.getElementById('modalTitle').textContent = 'إضافة اشتراك وزبون جديد - HSY SHOP';
+      document.getElementById('saveSubBtnText').textContent = 'حفظ وتفعيل الاشتراك';
+      
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('subStartDate').value = today;
+      setSubDuration(1, 'month');
+
+      document.getElementById('subServiceInput').value = '';
+      document.getElementById('subCostPrice').value = '800';
+      document.getElementById('subSellingPrice').value = '1600';
+      calcSubModalProfit();
+
+      document.getElementById('subscriptionModal').classList.remove('hidden');
+      document.getElementById('subCustomerName').focus();
+      lucide.createIcons();
+    }
+
+    function closeSubscriptionModal() {
+      document.getElementById('subscriptionModal').classList.add('hidden');
+    }
+
+    // Save Subscription (Create or Update)
+    function saveSubscription(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('subId').value || ('sub-' + Date.now());
+      const service = document.getElementById('subServiceInput').value.trim() || 'اشتراك عام';
+
+      const newSub = {
+        id: id,
+        customerName: document.getElementById('subCustomerName').value.trim(),
+        messenger: document.getElementById('subCustomerMessenger').value.trim(),
+        service: service,
+        duration: document.getElementById('subDurationValue').value,
+        startDate: document.getElementById('subStartDate').value,
+        endDate: document.getElementById('subEndDate').value,
+        accountEmail: document.getElementById('subAccountEmail').value.trim(),
+        accountPassword: document.getElementById('subAccountPassword').value.trim(),
+        profileSlot: document.getElementById('subProfileSlot').value.trim() || 'الملف 1',
+        profilePin: document.getElementById('subProfilePin').value.trim(),
+        accountType: document.getElementById('subAccountType').value,
+        costPrice: parseFloat(document.getElementById('subCostPrice').value) || 0,
+        sellingPrice: parseFloat(document.getElementById('subSellingPrice').value) || 0,
+        notes: document.getElementById('subNotes').value.trim()
+      };
+
+      let list = getSubscriptions();
+      const existingIndex = list.findIndex(item => item.id === id);
+
+      if (existingIndex >= 0) {
+        list[existingIndex] = newSub;
+        showToast('تم تحديث بيانات الاشتراك بنجاح 🔄');
+      } else {
+        list.unshift(newSub);
+        showToast('تم تسجيل اشتراك الزبون بنجاح ✨');
+        try {
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.8 }
+          });
+        } catch(err) {}
+      }
+
+      saveSubscriptionsList(list);
+      closeSubscriptionModal();
+    }
+
+    // Edit Subscription
+    function editSubscription(id) {
+      const list = getSubscriptions();
+      const sub = list.find(s => s.id === id);
+      if (!sub) return;
+
+      document.getElementById('subId').value = sub.id;
+      document.getElementById('modalTitle').textContent = `تعديل اشتراك: ${sub.customerName}`;
+      document.getElementById('saveSubBtnText').textContent = 'حفظ التعديلات';
+
+      document.getElementById('subCustomerName').value = sub.customerName || '';
+      document.getElementById('subCustomerMessenger').value = sub.messenger || '';
+
+      document.getElementById('subServiceInput').value = sub.service || '';
+      document.getElementById('subDurationValue').value = sub.duration || 'شهر واحد';
+      document.getElementById('subStartDate').value = sub.startDate || '';
+      document.getElementById('subEndDate').value = sub.endDate || '';
+
+      document.getElementById('subAccountEmail').value = sub.accountEmail || '';
+      document.getElementById('subAccountPassword').value = sub.accountPassword || '';
+      document.getElementById('subProfileSlot').value = sub.profileSlot || '';
+      document.getElementById('subProfilePin').value = sub.profilePin || '';
+      document.getElementById('subAccountType').value = sub.accountType || 'شاشة خاصة (Profile)';
+
+      document.getElementById('subCostPrice').value = sub.costPrice || 0;
+      document.getElementById('subSellingPrice').value = sub.sellingPrice || 0;
+      document.getElementById('subNotes').value = sub.notes || '';
+
+      calcSubModalProfit();
+      document.getElementById('subscriptionModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    // Quick Renew
+    function quickRenewSubscription(id) {
+      let list = getSubscriptions();
+      const sub = list.find(s => s.id === id);
+      if (!sub) return;
+
+      if (!confirm(`هل تريد تجديد اشتراك الزبون "${sub.customerName}" لمدة جديدة؟`)) return;
+
+      const today = new Date();
+      const currentEnd = new Date(sub.endDate);
+      const baseDate = currentEnd > today ? currentEnd : today;
+
+      baseDate.setMonth(baseDate.getMonth() + 1);
+      sub.startDate = today.toISOString().split('T')[0];
+      sub.endDate = baseDate.toISOString().split('T')[0];
+
+      saveSubscriptionsList(list);
+      showToast(`تم تجديد اشتراك ${sub.customerName} بنجاح ✅`);
+    }
+
+    // Delete Subscription
+    function deleteSubscription(id) {
+      const list = getSubscriptions();
+      const sub = list.find(s => s.id === id);
+      if (!sub) return;
+
+      if (confirm(`هل أنت متأكد من رغبتك في حذف اشتراك "${sub.customerName}"؟`)) {
+        const updated = list.filter(s => s.id !== id);
+        saveSubscriptionsList(updated);
+        showToast('تم حذف الاشتراك');
+      }
+    }
+
+    // ============================================
+    // CUSTOMER MESSENGER INTEGRATION
+    // (Exclusively for customer communication & renewals)
+    // ============================================
+    function sendRenewalReminderMessenger(id) {
+      const list = getSubscriptions();
+      const sub = list.find(s => s.id === id);
+      if (!sub) return;
+
+      const info = getSubscriptionStatus(sub.endDate);
+      let statusPhrase = `سينتهي بتاريخ ${sub.endDate}`;
+      if (info.days < 0) {
+        statusPhrase = `قد انتهى منذ ${Math.abs(info.days)} يوم (بتاريخ ${sub.endDate})`;
+      } else if (info.days === 0) {
+        statusPhrase = `ينتهي اليوم (${sub.endDate})`;
+      } else {
+        statusPhrase = `قارب على الانتهاء متبقي له ${info.days} يوم (بتاريخ ${sub.endDate})`;
+      }
+
+      const reminderText = 
+        `🔔 تذكير بتجديد الاشتراك - HSY SHOP 🇩🇿\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `مرحباً بك أخي الكريم ${sub.customerName}،\n` +
+        `نود إعلامك بأن اشتراكك في [${sub.service}] ${statusPhrase}.\n` +
+        `سعر التجديد: ${Math.round(sub.sellingPrice || 0)} د.ج للمدة (${sub.duration || 'شهر'}).\n\n` +
+        `لتجديد اشتراكك ومواصلة الخدمة دون انقطاع، يسعدنا تواصلك معنا والرد على هذه الرسالة 🌹\n` +
+        `متجر HSY SHOP في خدمتكم دائماً.`;
+
+      const cleanMsg = cleanMessengerUsername(sub.messenger);
+      const messengerUrl = cleanMsg ? `https://m.me/${cleanMsg}` : `https://m.me/`;
+
+      navigator.clipboard.writeText(reminderText).then(() => {
+        showToast(`تم نسخ رسالة التجديد! تم فتح ميسنجر لمراسلة الزبون (${sub.customerName}) 💬`);
+        window.open(messengerUrl, '_blank');
+      }).catch(() => {
+        window.open(messengerUrl, '_blank');
+      });
+    }
+
+    // Receipt Modal logic
+    function openReceiptModal(id) {
+      const list = getSubscriptions();
+      const sub = list.find(s => s.id === id);
+      if (!sub) return;
+
+      activeReceiptSub = sub;
+
+      document.getElementById('rcptCustomer').textContent = sub.customerName;
+      document.getElementById('rcptMessenger').textContent = sub.messenger || 'غير محدد';
+      document.getElementById('rcptService').textContent = sub.service;
+      document.getElementById('rcptDuration').textContent = sub.duration || 'شهر واحد';
+      document.getElementById('rcptPrice').textContent = `${Math.round(sub.sellingPrice || 0).toLocaleString('ar-DZ')} د.ج`;
+      document.getElementById('rcptStartDate').textContent = sub.startDate;
+      document.getElementById('rcptEndDate').textContent = sub.endDate;
+
+      document.getElementById('rcptEmail').textContent = sub.accountEmail || '---';
+      document.getElementById('rcptPassword').textContent = sub.accountPassword || '---';
+      document.getElementById('rcptSlot').textContent = sub.profileSlot || '---';
+      document.getElementById('rcptPin').textContent = sub.profilePin || 'بدون رمز';
+      document.getElementById('rcptNotes').textContent = sub.notes || 'نتمنى لك تجربة ممتعة! يرجى الالتزام بعدم تغيير بيانات الحساب أو استخدام ملفات أخرى لضمان استمرار الخدمة.';
+
+      document.getElementById('receiptModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.add('hidden');
+    }
+
+    // Prepare Customer Messenger Receipt Text
+    function getCustomerReceiptText(sub) {
+      return `✨ فاتورة اشتراك رسمي من HSY SHOP ✨\n` +
+             `━━━━━━━━━━━━━━━━━━━━━━\n` +
+             `👤 الزبون: ${sub.customerName}\n` +
+             `📺 نوع الخدمة: ${sub.service}\n` +
+             `⏳ المدة: ${sub.duration || 'شهر'}\n` +
+             `💵 السعر: ${Math.round(sub.sellingPrice || 0)} د.ج\n` +
+             `📅 تاريخ البدء: ${sub.startDate}\n` +
+             `🔒 تاريخ الانتهاء: ${sub.endDate}\n` +
+             `━━━━━━━━━━━━━━━━━━━━━━\n` +
+             `🔑 بيانات الدخول للخدمة:\n` +
+             `📧 الحساب: ${sub.accountEmail || '---'}\n` +
+             `🔑 كلمة السر: ${sub.accountPassword || '---'}\n` +
+             `👤 الشاشة / الملف: ${sub.profileSlot || '---'}\n` +
+             (sub.profilePin ? `🔢 رمز PIN: ${sub.profilePin}\n` : '') +
+             `━━━━━━━━━━━━━━━━━━━━━━\n` +
+             `📌 شروط الاستخدام: ${sub.notes || 'يرجى عدم تغيير أي بيانات للحفاظ على الضمان.'}\n\n` +
+             `❤️ شكرًا لثقتك بمتجر HSY SHOP! يسعدنا خدمتك دائمًا 🇩🇿`;
+    }
+
+    function sendReceiptToCustomerMessenger() {
+      if (!activeReceiptSub) return;
+      const receiptText = getCustomerReceiptText(activeReceiptSub);
+      const cleanMsg = cleanMessengerUsername(activeReceiptSub.messenger);
+      const messengerUrl = cleanMsg ? `https://m.me/${cleanMsg}` : `https://m.me/`;
+
+      navigator.clipboard.writeText(receiptText).then(() => {
+        showToast('تم نسخ الفاتورة للحافظة! تم فتح ميسنجر لإرسالها للزبون 📋💬');
+        window.open(messengerUrl, '_blank');
+      }).catch(() => {
+        window.open(messengerUrl, '_blank');
+      });
+    }
+
+    function copyReceiptText() {
+      if (!activeReceiptSub) return;
+      navigator.clipboard.writeText(getCustomerReceiptText(activeReceiptSub)).then(() => {
+        showToast('تم نسخ كليشة الاشتراك بنجاح! جاهزة للإرسال في ميسنجر 📋');
+      });
+    }
+
+    // ============================================
+    // STANDALONE PROFIT CALCULATOR
+    // ============================================
+    function setCalcMode(mode) {
+      calcMode = mode;
+      const btn1 = document.getElementById('calcMode-1');
+      const btn2 = document.getElementById('calcMode-2');
+      const sellWrap = document.getElementById('calcInput-sellingWrapper');
+      const targetWrap = document.getElementById('calcInput-targetMarginWrapper');
+
+      if (mode === 1) {
+        btn1.className = 'flex-1 py-2 rounded-lg font-bold bg-cyan-600 text-white transition text-center';
+        btn2.className = 'flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition text-center';
+        sellWrap.classList.remove('hidden');
+        targetWrap.classList.add('hidden');
+      } else {
+        btn2.className = 'flex-1 py-2 rounded-lg font-bold bg-cyan-600 text-white transition text-center';
+        btn1.className = 'flex-1 py-2 rounded-lg font-medium text-slate-400 hover:text-white transition text-center';
+        sellWrap.classList.add('hidden');
+        targetWrap.classList.remove('hidden');
+      }
+      runStandaloneCalc();
+    }
+
+    function runStandaloneCalc() {
+      const cost = parseFloat(document.getElementById('calcCostPrice').value) || 0;
+      let selling = 0;
+      let profit = 0;
+      let marginPercent = 0;
+      let markupPercent = 0;
+
+      if (calcMode === 1) {
+        selling = parseFloat(document.getElementById('calcSellingPrice').value) || 0;
+        profit = selling - cost;
+        marginPercent = selling > 0 ? (profit / selling) * 100 : 0;
+        markupPercent = cost > 0 ? (profit / cost) * 100 : 0;
+      } else {
+        const targetMargin = parseFloat(document.getElementById('calcTargetMargin').value) || 0;
+        if (targetMargin >= 100) {
+          marginPercent = 99;
+          selling = cost / (1 - 0.99);
+        } else {
+          selling = cost / (1 - (targetMargin / 100));
+          marginPercent = targetMargin;
+        }
+        profit = selling - cost;
+        markupPercent = cost > 0 ? (profit / cost) * 100 : 0;
+      }
+
+      // Update UI results in Algerian Dinars (د.ج)
+      const netProfitEl = document.getElementById('calcRes-netProfit');
+      netProfitEl.textContent = `${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString('ar-DZ')} د.ج`;
+      netProfitEl.className = `text-xl font-black ${profit >= 0 ? 'text-cyan-400' : 'text-rose-400'}`;
+
+      document.getElementById('calcRes-marginPercent').textContent = `${marginPercent.toFixed(1)}%`;
+      document.getElementById('calcRes-markupPercent').textContent = `${markupPercent >= 0 ? '+' : ''}${markupPercent.toFixed(1)}%`;
+
+      // Badge rating
+      const badge = document.getElementById('calcRes-badge');
+      if (marginPercent >= 50) {
+        badge.className = 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        badge.textContent = 'ربح ممتاز 🚀';
+      } else if (marginPercent >= 30) {
+        badge.className = 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+        badge.textContent = 'ربح جيد جداً 👍';
+      } else if (marginPercent > 0) {
+        badge.className = 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        badge.textContent = 'ربح متوسط ⚖️';
+      } else {
+        badge.className = 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        badge.textContent = 'خسارة مالية ⚠️';
+      }
+
+      // Progress Breakdown Bar
+      let costRatio = 0;
+      let profitRatio = 0;
+      if (selling > 0 && profit >= 0) {
+        costRatio = ((cost / selling) * 100).toFixed(1);
+        profitRatio = ((profit / selling) * 100).toFixed(1);
+      } else if (profit < 0) {
+        costRatio = 100;
+        profitRatio = 0;
+      }
+
+      document.getElementById('calcBar-costText').textContent = `${Math.round(cost).toLocaleString('ar-DZ')} د.ج`;
+      document.getElementById('calcBar-costPercent').textContent = `${costRatio}%`;
+      document.getElementById('calcBar-costFill').style.width = `${costRatio}%`;
+
+      document.getElementById('calcBar-profitText').textContent = `${Math.round(profit).toLocaleString('ar-DZ')} د.ج`;
+      document.getElementById('calcBar-profitPercent').textContent = `${profitRatio}%`;
+      document.getElementById('calcBar-profitFill').style.width = `${profitRatio}%`;
+    }
+
+    function applyCalcToNewModal() {
+      const name = document.getElementById('calcProductName').value;
+      const cost = parseFloat(document.getElementById('calcCostPrice').value) || 0;
+      let sell = 0;
+      if (calcMode === 1) {
+        sell = parseFloat(document.getElementById('calcSellingPrice').value) || 0;
+      } else {
+        const target = parseFloat(document.getElementById('calcTargetMargin').value) || 0;
+        sell = target >= 100 ? cost * 2 : cost / (1 - (target / 100));
+      }
+
+      openAddSubscriptionModal();
+      if (name) {
+        document.getElementById('subServiceInput').value = name;
+      }
+      document.getElementById('subCostPrice').value = Math.round(cost);
+      document.getElementById('subSellingPrice').value = Math.round(sell);
+      calcSubModalProfit();
+    }
+
+    function copyCalcResultText() {
+      const name = document.getElementById('calcProductName').value || 'منتج في متجر HSY SHOP';
+      const cost = parseFloat(document.getElementById('calcCostPrice').value) || 0;
+      let sell = parseFloat(document.getElementById('calcSellingPrice').value) || 0;
+      if (calcMode === 2) {
+        const target = parseFloat(document.getElementById('calcTargetMargin').value) || 0;
+        sell = cost / (1 - (target / 100));
+      }
+      const profit = sell - cost;
+      const margin = ((profit / sell) * 100).toFixed(1);
+
+      const msg = `📊 حساب تسعير وأرباح منتج - HSY SHOP 📊\n` +
+                  `📦 المنتج: ${name}\n` +
+                  `📉 التكلفة الحقيقية: ${Math.round(cost)} د.ج\n` +
+                  `💵 سعر البيع المقترح: ${Math.round(sell)} د.ج\n` +
+                  `💰 صافي الربح: +${Math.round(profit)} د.ج\n` +
+                  `📈 نسبة هامش الربح: ${margin}%\n` +
+                  `-----------------------------\n` +
+                  `حُسب عبر لوحة تحكم HSY SHOP الجزائر`;
+
+      navigator.clipboard.writeText(msg).then(() => {
+        showToast('تم نسخ حساب التسعير بنجاح 📋');
+      });
+    }
+
+    // Chart.js render in DZD
+    function renderProfitChart() {
+      const canvas = document.getElementById('profitChart');
+      if (!canvas) return;
+
+      const subs = getSubscriptions();
+      const serviceProfits = {};
+
+      subs.forEach(s => {
+        const profit = (parseFloat(s.sellingPrice) || 0) - (parseFloat(s.costPrice) || 0);
+        serviceProfits[s.service] = (serviceProfits[s.service] || 0) + (profit > 0 ? profit : 0);
+      });
+
+      const labels = Object.keys(serviceProfits);
+      const data = Object.values(serviceProfits);
+
+      if (profitChartInstance) {
+        profitChartInstance.destroy();
+      }
+
+      const colors = ['#00d2ff', '#0ea5e9', '#38bdf8', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#6366f1'];
+
+      profitChartInstance = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: labels.length ? labels : ['لا توجد اشتراكات مدخلة'],
+          datasets: [{
+            data: data.length ? data : [1],
+            backgroundColor: colors,
+            borderColor: '#0f172a',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#94a3b8',
+                font: { family: 'Cairo', size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ` ${context.label}: ${Math.round(context.raw).toLocaleString('ar-DZ')} د.ج`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // ============================================
+    // PHONE MODAL FUNCTIONS (QR & MOBILE LINKS)
+    // ============================================
+    function openPhoneModal() {
+      document.getElementById('phoneModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closePhoneModal() {
+      document.getElementById('phoneModal').classList.add('hidden');
+    }
+
+    function copyWifiPhoneLink() {
+      const val = document.getElementById('wifiPhoneLink').value;
+      navigator.clipboard.writeText(val).then(() => {
+        showToast('تم نسخ رابط الواي فاي للهاتف 📋');
+      });
+    }
+
+    function copyTunnelPhoneLink() {
+      const val = document.getElementById('tunnelPhoneLink').value;
+      navigator.clipboard.writeText(val).then(() => {
+        showToast('تم نسخ الرابط العام للهاتف 🌐');
+      });
+    }
+
+    // ============================================
+    // ADMIN SHARING & REPORTS (NO MESSENGER)
+    // ============================================
+    function openAdminShareModal() {
+      const url = window.location.href;
+      document.getElementById('quickAdminLinkInput').value = url;
+      document.getElementById('adminShareModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeAdminShareModal() {
+      document.getElementById('adminShareModal').classList.add('hidden');
+    }
+
+    function copyQuickAdminLink() {
+      const url = document.getElementById('quickAdminLinkInput').value;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('تم نسخ رابط لوحة الأدمن بنجاح 📋');
+      });
+    }
+
+    function copyAdminPageLink() {
+      const url = document.getElementById('adminPageLinkInput').value;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('تم نسخ الرابط المباشر للأدمن بنجاح 🔗');
+      });
+    }
+
+    function generateAdminSummaryMessage() {
+      const subs = getSubscriptions();
+      let totalRevenue = 0;
+      let totalCost = 0;
+      let activeCount = 0;
+      let expiringCount = 0;
+      let expiredCount = 0;
+
+      subs.forEach(sub => {
+        totalRevenue += parseFloat(sub.sellingPrice) || 0;
+        totalCost += parseFloat(sub.costPrice) || 0;
+        const st = getSubscriptionStatus(sub.endDate);
+        if (st.status === 'active') activeCount++;
+        else if (st.status === 'expiring') expiringCount++;
+        else if (st.status === 'expired') expiredCount++;
+      });
+
+      const netProfit = totalRevenue - totalCost;
+      const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
+      const todayStr = new Date().toISOString().split('T')[0];
+      const pageUrl = window.location.href;
+
+      return `📊 تقرير مبيعات وأرباح HSY SHOP إلى الـ Admin 📊\n` +
+             `📅 التاريخ: ${todayStr}\n` +
+             `━━━━━━━━━━━━━━━━━━━━━━\n` +
+             `👥 إجمالي المشتركين: ${subs.length}\n` +
+             `✅ الاشتراكات النشطة: ${activeCount}\n` +
+             `⚠️ اشتراكات تنتهي قريباً: ${expiringCount}\n` +
+             `❌ اشتراكات منتهية: ${expiredCount}\n` +
+             `━━━━━━━━━━━━━━━━━━━━━━\n` +
+             `💵 إجمالي المبيعات: ${Math.round(totalRevenue).toLocaleString('ar-DZ')} د.ج\n` +
+             `📉 إجمالي التكلفة الحقيقية: ${Math.round(totalCost).toLocaleString('ar-DZ')} د.ج\n` +
+             `💰 صافي الأرباح: +${Math.round(netProfit).toLocaleString('ar-DZ')} د.ج\n` +
+             `📈 متوسط هامش الربح: ${profitMargin}%\n` +
+             `━━━━━━━━━━━━━━━━━━━━━━\n` +
+             `🔗 رابط لوحة التحكم المباشر:\n${pageUrl}\n\n` +
+             `✨ نظام إدارة HSY SHOP التلقائي (الجزائر 🇩🇿)`;
+    }
+
+    function updateAdminReportPreview() {
+      const preview = document.getElementById('adminReportPreview');
+      if (preview) {
+        preview.textContent = generateAdminSummaryMessage();
+      }
+    }
+
+    function copyAdminReportText() {
+      navigator.clipboard.writeText(generateAdminSummaryMessage()).then(() => {
+        showToast('تم نسخ التقرير المالي للأدمن بنجاح 📋');
+      });
+    }
+
+    // Export to Excel / CSV
+    function exportToCSV() {
+      const subs = getSubscriptions();
+      const headers = ['ID', 'Customer Name', 'Messenger', 'Service', 'Duration', 'Start Date', 'End Date', 'Account Email', 'Slot', 'Cost (DZD)', 'Selling (DZD)', 'Profit (DZD)', 'Status'];
+      
+      const rows = subs.map(s => {
+        const cost = parseFloat(s.costPrice) || 0;
+        const sell = parseFloat(s.sellingPrice) || 0;
+        const profit = sell - cost;
+        const status = getSubscriptionStatus(s.endDate).label;
+        return [
+          s.id,
+          `"${s.customerName}"`,
+          `"${s.messenger || ''}"`,
+          `"${s.service}"`,
+          `"${s.duration || ''}"`,
+          s.startDate,
+          s.endDate,
+          `"${s.accountEmail || ''}"`,
+          `"${s.profileSlot || ''}"`,
+          cost,
+          sell,
+          profit,
+          `"${status}"`
+        ].join(',');
+      });
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `HSY_SHOP_Subscribers_DZD_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('تم تصدير ملف CSV / Excel بنجاح 📁');
+    }
+
+    // Export JSON Backup
+    function exportBackupJSON() {
+      const data = {
+        store: 'HSY SHOP',
+        version: '2.1',
+        currency: 'د.ج',
+        exportedAt: new Date().toISOString(),
+        subscriptions: getSubscriptions()
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `HSY_SHOP_Backup_DZD_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('تم تحميل ملف النسخة الاحتياطية JSON 📥');
+    }
+
+    // Import JSON Backup
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const json = JSON.parse(e.target.result);
+          if (json && Array.isArray(json.subscriptions)) {
+            localStorage.setItem('hsy_subscriptions_dzd', JSON.stringify(json.subscriptions));
+            updateDashboard();
+            showToast('تم استعادة النسخة الاحتياطية بنجاح! 🎉');
+          } else {
+            alert('الملف غير متوافق');
+          }
+        } catch (err) {
+          alert('خطأ في قراءة ملف JSON: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Generate Shareable Cloud Data URL
+    function generateDataShareLink() {
+      const subs = getSubscriptions();
+      const payload = encodeURIComponent(JSON.stringify(subs));
+      const shareUrl = `${window.location.origin}${window.location.pathname}#data=${payload}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast('تم نسخ رابط يحتوي على جميع البيانات لنقله إلى أي جهاز 🌐');
+      });
+    }
+
+    // Read Hash Data on Load if provided
+    window.addEventListener('load', () => {
+      if (window.location.hash.startsWith('#data=')) {
+        try {
+          const raw = decodeURIComponent(window.location.hash.substring(6));
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            if (confirm(`تم العثور على (${parsed.length}) اشتراك في هذا الرابط. هل تريد مزامنتها في متجرك؟`)) {
+              saveSubscriptionsList(parsed);
+              window.location.hash = '';
+              showToast('تم استيراد البيانات من الرابط بنجاح! 🚀');
+            }
+          }
+        } catch(e) {
+          console.error(e);
+        }
+      }
+    });
+
+    // Toast helper
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.textContent = msg;
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+    }
+
+    function showBrandModal() {
+      showToast('HSY SHOP - علامتك التجارية المميزة في الجزائر 🛍️🇩🇿');
+    }
+  </script>
+</body>
+</html>
