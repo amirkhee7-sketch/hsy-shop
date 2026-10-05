@@ -604,7 +604,7 @@
             </p>
 
             <div>
-              <label class="block text-xs font-bold text-slate-300 mb-1">رابط لوحة التحكم الحالي</label>
+              <label class="block text-xs font-bold text-slate-300 mb-1">رابط لوحة التحكم الذكي (يحفظ وينقل كافة البيانات تلقائياً):</label>
               <div class="flex items-center gap-2">
                 <input type="text" id="adminPageLinkInput" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-cyan-300 font-mono select-all">
                 <button onclick="copyAdminPageLink()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
@@ -612,6 +612,7 @@
                   <span>نسخ الرابط</span>
                 </button>
               </div>
+              <span class="text-[11px] text-emerald-400 mt-1 block">📌 عند إرسال هذا الرابط إلى الأدمن أو فتحه على أي جهاز، يتم حفظ ومزامنة كافة الزبائن تلقائياً.</span>
             </div>
 
             <!-- Export / Backup / Share Data -->
@@ -676,7 +677,7 @@
             <i data-lucide="user" class="w-3.5 h-3.5"></i>
             <span>بيانات الزبون وحساب ميسنجر للتجديد والمراسلة</span>
           </h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-300 mb-1">اسم الزبون <span class="text-rose-400">*</span></label>
               <input type="text" id="subCustomerName" required placeholder="اكتب اسم الزبون..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
@@ -686,9 +687,16 @@
                 <svg class="w-3.5 h-3.5 fill-current text-blue-400" viewBox="0 0 24 24">
                   <path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.514 3.734 7.214V22l3.39-1.86c.92.254 1.89.39 2.876.39 5.523 0 10-4.145 10-9.258C22 6.145 17.523 2 12 2zm1.066 12.434l-2.582-2.756-5.042 2.756 5.545-5.884 2.646 2.756 4.978-2.756-5.545 5.884z"/>
                 </svg>
-                <span>حساب أو رابط ميسنجر الزبون (للتجديد والتواصل)</span>
+                <span>حساب أو رابط ميسنجر</span>
               </label>
-              <input type="text" id="subCustomerMessenger" placeholder="مثال: faycal.dz أو رابط الحساب أو اسم المستخدم" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+              <input type="text" id="subCustomerMessenger" placeholder="مثال: faycal.dz أو الرابط" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>فُعِل من طرف (المسؤول / البائع) <span class="text-emerald-400">*</span></span>
+              </label>
+              <input type="text" id="subActivatedBy" placeholder="مثال: أمير، الأدمن، البائع 1..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-emerald-300 font-semibold focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
             </div>
           </div>
         </div>
@@ -874,6 +882,10 @@
             <span class="font-bold text-blue-400" id="rcptMessenger">---</span>
           </div>
           <div class="flex justify-between py-1 border-b border-slate-800/60">
+            <span class="text-slate-400">فُعِل من طرف:</span>
+            <span class="font-bold text-emerald-400" id="rcptActivatedBy">---</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800/60">
             <span class="text-slate-400">نوع الخدمة / الاشتراك:</span>
             <span class="font-bold text-cyan-300" id="rcptService">---</span>
           </div>
@@ -968,11 +980,12 @@
       </p>
 
       <div class="space-y-2">
-        <label class="block text-xs font-bold text-slate-300">رابط الصفحة المباشر للأدمن:</label>
+        <label class="block text-xs font-bold text-slate-300">رابط الصفحة الذكي للأدمن (يحفظ وينقل كافة بيانات الزبائن تلقائياً):</label>
         <div class="flex items-center gap-2">
           <input type="text" id="quickAdminLinkInput" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-cyan-300 font-mono select-all">
-          <button onclick="copyQuickAdminLink()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-bold">نسخ</button>
+          <button onclick="copyQuickAdminLink()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-bold shrink-0">نسخ الرابط</button>
         </div>
+        <p class="text-[11px] text-emerald-400 font-medium">✨ بمجرد فتح هذا الرابط على أي جهاز، سيتم حفظ ومزامنة كافة بيانات الزبائن فورياً!</p>
       </div>
 
       <div class="pt-2 flex flex-col gap-2">
@@ -1073,6 +1086,7 @@
         profilePin: '1994',
         costPrice: 500,
         sellingPrice: 1200,
+        activatedBy: 'أمير (HSY SHOP)',
         notes: 'دفع عبر BaridiMob - زبون دائم'
       }
     ];
@@ -1094,8 +1108,8 @@
       return str;
     }
 
-    // Storage key for 1-customer initial database
-    const STORAGE_KEY = 'hsy_shop_subscribers_v3';
+    // Storage key for subscribers database
+    const STORAGE_KEY = 'hsy_shop_subscribers_v4';
 
     // Load Subscriptions from localStorage or initialize with the 1 customer
     function getSubscriptions() {
@@ -1113,6 +1127,9 @@
     function saveSubscriptionsList(list) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
       updateDashboard();
+      if (typeof updateShareLinksInDOM === 'function') {
+        updateShareLinksInDOM();
+      }
     }
 
     // Function to clear all customers
@@ -1130,12 +1147,11 @@
       document.getElementById('subStartDate').value = today;
       calculateExpiryDate();
 
-      // Update Page link inputs
-      const currentUrl = window.location.href;
-      document.getElementById('adminPageLinkInput').value = currentUrl;
-      document.getElementById('quickAdminLinkInput').value = currentUrl;
-
       // Update everything
+      updateDashboard();
+      if (typeof updateShareLinksInDOM === 'function') {
+        updateShareLinksInDOM();
+      }
       updateDashboard();
       runStandaloneCalc();
       lucide.createIcons();
@@ -1287,7 +1303,8 @@
           const matchService = (sub.service || '').toLowerCase().includes(searchQuery);
           const matchEmail = (sub.accountEmail || '').toLowerCase().includes(searchQuery);
           const matchSlot = (sub.profileSlot || '').toLowerCase().includes(searchQuery);
-          return matchName || matchMessenger || matchService || matchEmail || matchSlot;
+          const matchActivatedBy = (sub.activatedBy || '').toLowerCase().includes(searchQuery);
+          return matchName || matchMessenger || matchService || matchEmail || matchSlot || matchActivatedBy;
         }
 
         return true;
@@ -1313,7 +1330,7 @@
         return `
           <tr class="hover:bg-slate-800/40 transition group">
             
-            <!-- Customer & Messenger -->
+            <!-- Customer, Messenger & Activated By -->
             <td class="py-3 px-4">
               <div class="font-bold text-white flex items-center gap-1.5">
                 <span>${sub.customerName}</span>
@@ -1330,6 +1347,10 @@
                     <i data-lucide="external-link" class="w-3.5 h-3.5 inline"></i>
                   </a>
                 ` : ''}
+              </div>
+              <div class="mt-1 flex items-center gap-1 text-[11px] text-emerald-400 font-medium bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-800/40 w-fit">
+                <i data-lucide="user-check" class="w-3 h-3 text-emerald-400"></i>
+                <span>فُعِل من طرف: <strong class="text-emerald-300 font-bold">${sub.activatedBy || 'الأدمن'}</strong></span>
               </div>
             </td>
 
@@ -1514,6 +1535,7 @@
       document.getElementById('subId').value = '';
       document.getElementById('modalTitle').textContent = 'إضافة اشتراك وزبون جديد - HSY SHOP';
       document.getElementById('saveSubBtnText').textContent = 'حفظ وتفعيل الاشتراك';
+      document.getElementById('subActivatedBy').value = 'أمير (المدير)';
       
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('subStartDate').value = today;
@@ -1544,6 +1566,7 @@
         id: id,
         customerName: document.getElementById('subCustomerName').value.trim(),
         messenger: document.getElementById('subCustomerMessenger').value.trim(),
+        activatedBy: document.getElementById('subActivatedBy').value.trim() || 'أمير (المدير)',
         service: service,
         duration: document.getElementById('subDurationValue').value,
         startDate: document.getElementById('subStartDate').value,
@@ -1592,6 +1615,7 @@
 
       document.getElementById('subCustomerName').value = sub.customerName || '';
       document.getElementById('subCustomerMessenger').value = sub.messenger || '';
+      document.getElementById('subActivatedBy').value = sub.activatedBy || '';
 
       document.getElementById('subServiceInput').value = sub.service || '';
       document.getElementById('subDurationValue').value = sub.duration || 'شهر واحد';
@@ -1695,6 +1719,7 @@
 
       document.getElementById('rcptCustomer').textContent = sub.customerName;
       document.getElementById('rcptMessenger').textContent = sub.messenger || 'غير محدد';
+      document.getElementById('rcptActivatedBy').textContent = sub.activatedBy || 'إدارة HSY SHOP';
       document.getElementById('rcptService').textContent = sub.service;
       document.getElementById('rcptDuration').textContent = sub.duration || 'شهر واحد';
       document.getElementById('rcptPrice').textContent = `${Math.round(sub.sellingPrice || 0).toLocaleString('ar-DZ')} د.ج`;
@@ -1720,6 +1745,7 @@
       return `✨ فاتورة اشتراك رسمي من HSY SHOP ✨\n` +
              `━━━━━━━━━━━━━━━━━━━━━━\n` +
              `👤 الزبون: ${sub.customerName}\n` +
+             `👤 فُعِل من طرف: ${sub.activatedBy || 'إدارة HSY SHOP'}\n` +
              `📺 نوع الخدمة: ${sub.service}\n` +
              `⏳ المدة: ${sub.duration || 'شهر'}\n` +
              `💵 السعر: ${Math.round(sub.sellingPrice || 0)} د.ج\n` +
@@ -1977,11 +2003,28 @@
       });
     }
 
+    // Generate Shareable Link with Full Saved Data Encoded
+    function getShareableUrlWithData() {
+      const subs = getSubscriptions();
+      const payload = encodeURIComponent(JSON.stringify(subs));
+      const baseUrl = window.location.origin + window.location.pathname;
+      return `${baseUrl}#data=${payload}`;
+    }
+
+    function updateShareLinksInDOM() {
+      const shareUrl = getShareableUrlWithData();
+      const adminInput = document.getElementById('adminPageLinkInput');
+      if (adminInput) adminInput.value = shareUrl;
+      const quickInput = document.getElementById('quickAdminLinkInput');
+      if (quickInput) quickInput.value = shareUrl;
+      updateAdminReportPreview();
+    }
+
     // ============================================
     // ADMIN SHARING & REPORTS (NO MESSENGER)
     // ============================================
     function openAdminShareModal() {
-      const url = window.location.href;
+      const url = getShareableUrlWithData();
       document.getElementById('quickAdminLinkInput').value = url;
       document.getElementById('adminShareModal').classList.remove('hidden');
       lucide.createIcons();
@@ -1992,16 +2035,16 @@
     }
 
     function copyQuickAdminLink() {
-      const url = document.getElementById('quickAdminLinkInput').value;
+      const url = getShareableUrlWithData();
       navigator.clipboard.writeText(url).then(() => {
-        showToast('تم نسخ رابط لوحة الأدمن بنجاح 📋');
+        showToast('تم نسخ رابط لوحة الأدمن مع حفظ وتضمين كافة البيانات تلقائياً 📋✨');
       });
     }
 
     function copyAdminPageLink() {
-      const url = document.getElementById('adminPageLinkInput').value;
+      const url = getShareableUrlWithData();
       navigator.clipboard.writeText(url).then(() => {
-        showToast('تم نسخ الرابط المباشر للأدمن بنجاح 🔗');
+        showToast('تم نسخ الرابط المباشر مع حفظ وتضمين كافة البيانات تلقائياً 🔗✨');
       });
     }
 
@@ -2025,7 +2068,7 @@
       const netProfit = totalRevenue - totalCost;
       const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
       const todayStr = new Date().toISOString().split('T')[0];
-      const pageUrl = window.location.href;
+      const pageUrl = getShareableUrlWithData();
 
       return `📊 تقرير مبيعات وأرباح HSY SHOP إلى الـ Admin 📊\n` +
              `📅 التاريخ: ${todayStr}\n` +
@@ -2040,7 +2083,7 @@
              `💰 صافي الأرباح: +${Math.round(netProfit).toLocaleString('ar-DZ')} د.ج\n` +
              `📈 متوسط هامش الربح: ${profitMargin}%\n` +
              `━━━━━━━━━━━━━━━━━━━━━━\n` +
-             `🔗 رابط لوحة التحكم المباشر:\n${pageUrl}\n\n` +
+             `🔗 رابط لوحة التحكم المباشر (محفوظ بالبيانات كاملة):\n${pageUrl}\n\n` +
              `✨ نظام إدارة HSY SHOP التلقائي (الجزائر 🇩🇿)`;
     }
 
@@ -2060,7 +2103,7 @@
     // Export to Excel / CSV
     function exportToCSV() {
       const subs = getSubscriptions();
-      const headers = ['ID', 'Customer Name', 'Messenger', 'Service', 'Duration', 'Start Date', 'End Date', 'Account Email', 'Slot', 'Cost (DZD)', 'Selling (DZD)', 'Profit (DZD)', 'Status'];
+      const headers = ['ID', 'Customer Name', 'Messenger', 'Activated By', 'Service', 'Duration', 'Start Date', 'End Date', 'Account Email', 'Slot', 'Cost (DZD)', 'Selling (DZD)', 'Profit (DZD)', 'Status'];
       
       const rows = subs.map(s => {
         const cost = parseFloat(s.costPrice) || 0;
@@ -2071,6 +2114,7 @@
           s.id,
           `"${s.customerName}"`,
           `"${s.messenger || ''}"`,
+          `"${s.activatedBy || ''}"`,
           `"${s.service}"`,
           `"${s.duration || ''}"`,
           s.startDate,
@@ -2140,32 +2184,33 @@
 
     // Generate Shareable Cloud Data URL
     function generateDataShareLink() {
-      const subs = getSubscriptions();
-      const payload = encodeURIComponent(JSON.stringify(subs));
-      const shareUrl = `${window.location.origin}${window.location.pathname}#data=${payload}`;
+      const shareUrl = getShareableUrlWithData();
       navigator.clipboard.writeText(shareUrl).then(() => {
-        showToast('تم نسخ رابط يحتوي على جميع البيانات لنقله إلى أي جهاز 🌐');
+        showToast('تم نسخ الرابط الذكي مع حفظ وتضمين كافة البيانات لمشاركتها 🌐✨');
       });
     }
 
-    // Read Hash Data on Load if provided
-    window.addEventListener('load', () => {
+    // Automatically save and sync data from link on load or on hashchange
+    function autoSyncDataFromHash() {
       if (window.location.hash.startsWith('#data=')) {
         try {
           const raw = decodeURIComponent(window.location.hash.substring(6));
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            if (confirm(`تم العثور على (${parsed.length}) اشتراك في هذا الرابط. هل تريد مزامنتها في متجرك؟`)) {
-              saveSubscriptionsList(parsed);
-              window.location.hash = '';
-              showToast('تم استيراد البيانات من الرابط بنجاح! 🚀');
+            saveSubscriptionsList(parsed);
+            if (window.history && window.history.replaceState) {
+              window.history.replaceState(null, '', window.location.pathname);
             }
+            showToast(`تم حفظ ومزامنة بيانات (${parsed.length}) زبون تلقائياً من الرابط! 🎉`);
           }
         } catch(e) {
-          console.error(e);
+          console.error('Error auto-syncing link data:', e);
         }
       }
-    });
+    }
+
+    window.addEventListener('load', autoSyncDataFromHash);
+    window.addEventListener('hashchange', autoSyncDataFromHash);
 
     // Toast helper
     function showToast(msg) {
